@@ -1,4 +1,4 @@
-import { AfterBulkCreate, Column, Model, Table } from 'sequelize-typescript';
+import { Column, Model, Table, DataType } from 'sequelize-typescript';
 
 @Table
 export class BicBalance extends Model {
@@ -6,8 +6,8 @@ export class BicBalance extends Model {
   uid: number;
 
   @Column
-  address: number;
+  address: string;
 
-  @Column
-  amount: number;
+  @Column({ type: DataType.DECIMAL(30,0), allowNull: false })
+  amount: string;
 }

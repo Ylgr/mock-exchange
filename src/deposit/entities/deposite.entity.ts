@@ -1,4 +1,4 @@
-import { AfterBulkCreate, Column, Model, Table } from 'sequelize-typescript';
+import { Column, DataType, Model, Table } from 'sequelize-typescript';
 
 @Table
 export class Deposit extends Model {
@@ -8,12 +8,15 @@ export class Deposit extends Model {
   @Column
   txHash: string;
 
-  @Column
-  amount: number;
+  @Column({ type: DataType.DECIMAL(30,0), allowNull: false })
+  amount: string;
 
   @Column
-  confirm: number;
+  fromAddress: string;
 
   @Column
-  status: number;
+  toAddress: string;
+
+  @Column
+  blockNumber: number;
 }

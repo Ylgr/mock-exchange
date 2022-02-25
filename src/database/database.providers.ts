@@ -2,6 +2,8 @@ import * as dotenv from 'dotenv';
 dotenv.config({ path: '.env' });
 import { Sequelize } from 'sequelize-typescript';
 import { BicBalance } from '../bic-balance/entities/bic-balance.entity';
+import { Config } from '../config/entities/config.entity';
+import { Deposit } from '../deposit/entities/deposite.entity';
 
 
 export const databaseProviders = [
@@ -18,7 +20,9 @@ export const databaseProviders = [
         native: true,
       });
       sequelize.addModels([
-        BicBalance
+        Config,
+        BicBalance,
+        Deposit
       ]);
       await sequelize.sync({ force: false, alter: true });
       return sequelize;

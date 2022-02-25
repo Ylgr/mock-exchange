@@ -1,16 +1,35 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import HDWalletProvider = require('@truffle/hdwallet-provider');
+import { BicBalance } from './entities/bic-balance.entity';
+import BN  = require('bn.js');
+import * as dotenv from 'dotenv';
+dotenv.config({ path: '.env' });
 
 @Injectable()
 export class BicBalanceService {
-  findAll() {
-    return `This action returns all bicBalance`;
-  }
+  constructor(
+    @Inject('BIC_BALANCE_REPOSITORY')
+    private bicBalance: typeof BicBalance,
+  ) {}
 
-  findOne(id: number) {
-    return `This action returns a #${id} bicBalance`;
-  }
+  private readonly provider = new HDWalletProvider({
+    mnemonic: {
+      phrase: process.env.MASTER_WALLET_PHRASE
+    },
+    derivationPath: "m/06'/06'/21'/0/",
+    providerOrUrl: process.env.BSC_ENDPOINT
+  })
 
-  remove(id: number) {
-    return `This action removes a #${id} bicBalance`;
+  async getOrCreate(uid) {
+    const address = this.provider.getAddress(uid)
+    let balance = await this.bicBalance.findOne({where: {uid: uid}});
+    if(!balance) {
+      balance = await this.bicBalance.create({
+        address: address,
+        amount: new BN(0),
+        uid: uid,
+      })
+    }
+    return balance
   }
 }

@@ -5,18 +5,14 @@ import { BicBalanceService } from './bic-balance.service';
 export class BicBalanceController {
   constructor(private readonly bicBalanceService: BicBalanceService) {}
 
-  @Get()
-  findAll() {
-    return this.bicBalanceService.findAll();
+  // @Get()
+  // findAll() {
+  //   return this.bicBalanceService.findAll();
+  // }
+
+  @Get(':uid')
+  getOrCreate(@Param('uid') uid: string) {
+    return this.bicBalanceService.getOrCreate(+uid);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.bicBalanceService.findOne(+id);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.bicBalanceService.remove(+id);
-  }
 }
