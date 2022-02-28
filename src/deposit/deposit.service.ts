@@ -24,10 +24,13 @@ export class DepositService {
   private readonly logger = new Logger(DepositService.name);
   private readonly web3 = new Web3(process.env.BSC_ENDPOINT);
   private readonly bicContract = new this.web3.eth.Contract(BeinChainAbi as AbiItem[], process.env.BSC_BIC_CONTRACT)
+  private isBlockScannerRun: boolean = false;
 
   @Cron('15 * * * * *')
   async handleCron() {
     this.logger.debug('Called when the current second is 15');
+    if(this.isBlockScannerRun) return;
+    this.isBlockScannerRun = true;
     try {
       const currentBlock = await this.web3.eth.getBlockNumber();
 
@@ -81,5 +84,6 @@ export class DepositService {
     } catch (e) {
       this.logger.error(e.message)
     }
+    this.isBlockScannerRun = false;
   }
 }
