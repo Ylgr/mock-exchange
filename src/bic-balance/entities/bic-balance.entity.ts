@@ -2,7 +2,7 @@ import { Column, Model, Table, DataType } from 'sequelize-typescript';
 
 @Table
 export class BicBalance extends Model {
-  @Column
+  @Column({unique: true})
   uid: number;
 
   @Column

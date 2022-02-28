@@ -28,8 +28,9 @@ export class DepositService {
 
   @Cron('15 * * * * *')
   async handleCron() {
-    this.logger.debug('Called when the current second is 15');
     if(this.isBlockScannerRun) return;
+    this.logger.debug('Called when the current second is 15');
+
     this.isBlockScannerRun = true;
     try {
       const currentBlock = await this.web3.eth.getBlockNumber();
@@ -49,22 +50,24 @@ export class DepositService {
       }
 
       const lastSyncedBlock: number = parseInt(syncedBlock.value);
-      let toBlock = currentBlock - 15;
+      let toBlock = (lastSyncedBlock + 5000) > (currentBlock - 15) ? currentBlock - 15 : lastSyncedBlock + 5000;
 
       if (lastSyncedBlock > toBlock) {
         return;
       }
+      await syncedBlock.update({value: toBlock})
 
       const bicBalances = await this.bicBalance.findAll()
       const addressTrackingList = bicBalances.map(e => e.address)
 
       const pastEvents = await this.bicContract.getPastEvents('Transfer', { fromBlock: lastSyncedBlock, toBlock: toBlock })
       for(const eachEvent of pastEvents) {
-        if(addressTrackingList.includes(eachEvent.returnValues.to)) {
+        const lowerCaseAddress = eachEvent.returnValues.to.toLowerCase()
+        if(addressTrackingList.includes(lowerCaseAddress)) {
           const depositEvent = {
             txHash: eachEvent.transactionHash,
-            fromAddress: eachEvent.returnValues.from,
-            toAddress: eachEvent.returnValues.to,
+            fromAddress: eachEvent.returnValues.from.toLowerCase(),
+            toAddress: lowerCaseAddress,
             amount: new BN(eachEvent.returnValues.value),
             blockNumber: eachEvent.blockNumber
           }
@@ -81,6 +84,7 @@ export class DepositService {
           }
         }
       }
+
     } catch (e) {
       this.logger.error(e.message)
     }

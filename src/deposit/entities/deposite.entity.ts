@@ -2,10 +2,7 @@ import { Column, DataType, Model, Table } from 'sequelize-typescript';
 
 @Table
 export class Deposit extends Model {
-  @Column
-  uid: number;
-
-  @Column
+  @Column({unique: true})
   txHash: string;
 
   @Column({ type: DataType.DECIMAL(30,0), allowNull: false })
