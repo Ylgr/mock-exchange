@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import HDWalletProvider = require('@truffle/hdwallet-provider');
 import { BicBalance } from './entities/bic-balance.entity';
-import BN  = require('bn.js');
+import BN = require('bn.js');
 import * as dotenv from 'dotenv';
 dotenv.config({ path: '.env' });
 
