@@ -6,7 +6,10 @@ export class BlockchainTransaction extends Model {
   fromUid: number
 
   @Column
-  toAddress: number
+  toAddress: string
+
+  @Column({unique: true})
+  txHash: string;
 
   @Column({ type: DataType.DECIMAL(30,0), allowNull: false })
   amount: string;

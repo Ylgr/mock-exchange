@@ -8,9 +8,6 @@ export class InternalTransaction extends Model {
   @Column
   toUid: number
 
-  @Column({unique: true})
-  txHash: string;
-
   @Column({ type: DataType.DECIMAL(30,0), allowNull: false })
   amount: string;
 }

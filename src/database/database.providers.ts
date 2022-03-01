@@ -4,6 +4,8 @@ import { Sequelize } from 'sequelize-typescript';
 import { BicBalance } from '../bic-balance/entities/bic-balance.entity';
 import { Config } from '../config/entities/config.entity';
 import { Deposit } from '../deposit/entities/deposite.entity';
+import { InternalTransaction } from '../transaction/entities/internal-transaction.entity';
+import { BlockchainTransaction } from '../transaction/entities/blockchain-transaction.entity';
 
 
 export const databaseProviders = [
@@ -22,7 +24,9 @@ export const databaseProviders = [
       sequelize.addModels([
         Config,
         BicBalance,
-        Deposit
+        Deposit,
+        BlockchainTransaction,
+        InternalTransaction
       ]);
       await sequelize.sync({ force: false, alter: true });
       return sequelize;

@@ -37,6 +37,7 @@ export class TransactionService {
   private readonly web3 = new Web3(providerUser);
   private readonly web3Withdraw = new Web3(providerWithdrawWallet);
   private readonly bicContract = new this.web3.eth.Contract(BeinChainAbi as AbiItem[], process.env.BSC_BIC_CONTRACT)
+  private readonly bicContractWithdraw = new this.web3Withdraw.eth.Contract(BeinChainAbi as AbiItem[], process.env.BSC_BIC_CONTRACT)
 
   async createTransactionToAddress(createTransactionToAddressDto: CreateTransactionToAddressDto) {
     const userFrom = await this.verifyUser(createTransactionToAddressDto.fromUid, createTransactionToAddressDto.amount);
@@ -46,15 +47,12 @@ export class TransactionService {
         status: TransactionStatus.Fail
       }
     }
-    const userToInternal = await this.bicBalance.findOne({where: {address: createTransactionToAddressDto.toAddress}});
+    const toAddress = createTransactionToAddressDto.toAddress.toLowerCase()
+    const userToInternal = await this.bicBalance.findOne({where: {address: toAddress}});
     if(userToInternal) {
       return this.internalTransferToUid(userFrom.user, userToInternal, new BN(createTransactionToAddressDto.amount))
     } else {
-      return {
-        type: TransactionType.External,
-        status: TransactionStatus.Fail
-      }
-      // return this.createWithdrawTransaction(userFrom.user, createTransactionToAddressDto.toAddress, new BN(createTransactionToAddressDto.amount));
+      return this.createWithdrawTransaction(userFrom.user, toAddress, new BN(createTransactionToAddressDto.amount));
     }
   }
 
@@ -103,13 +101,29 @@ export class TransactionService {
   async internalTransferToUid(fromUser: BicBalance, toUser: BicBalance, amount: BN) {
     await fromUser.update({amount: new BN(fromUser.amount).sub(amount)})
     await toUser.update({amount: new BN(toUser.amount).add(amount)})
+    await this.internalTransaction.create({
+      fromUid: fromUser.uid,
+      toUid: toUser.uid,
+      amount: amount
+    })
     return {
       status: TransactionStatus.Success
     }
   }
 
   async createWithdrawTransaction(fromUser: BicBalance, toAddress: string, amount: BN) {
-    // await fromUser.update({amount: new BN(fromUser.amount).sub(amount)})
+    await fromUser.update({amount: new BN(fromUser.amount).sub(amount)})
+    const txWithdraw = await this.bicContractWithdraw.methods.transfer(toAddress, amount).send({ from: providerWithdrawWallet.getAddress(0)})
+    await this.blockchainTransaction.create({
+      fromUid: fromUser.uid,
+      toAddress: toAddress,
+      amount: amount,
+      txHash: txWithdraw.transactionHash
+    })
+    return {
+      status: TransactionStatus.Success,
+      transactionHash: txWithdraw.transactionHash
+    }
   }
 
   async collectBicStoreWallet(addresses: string[]) {
