@@ -15,4 +15,9 @@ export class TransactionController {
   createToUid(@Body() createTransactionDto: CreateTransactionToUidDto) {
     return this.transactionService.createTransactionToUid(createTransactionDto);
   }
+
+  @Post('collectBic')
+  collectBic(@Body() addresses: string[]) {
+    return this.transactionService.collectBicStoreWallet(addresses);
+  }
 }

@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
-import HDWalletProvider = require('@truffle/hdwallet-provider');
 import { BicBalance } from './entities/bic-balance.entity';
 import BN = require('bn.js');
+import { providerUser } from '../utils/utils';
 import * as dotenv from 'dotenv';
 dotenv.config({ path: '.env' });
 
@@ -12,16 +12,8 @@ export class BicBalanceService {
     private bicBalance: typeof BicBalance,
   ) {}
 
-  private readonly provider = new HDWalletProvider({
-    mnemonic: {
-      phrase: process.env.MASTER_WALLET_PHRASE
-    },
-    derivationPath: "m/06'/06'/21'/0/",
-    providerOrUrl: process.env.BSC_ENDPOINT
-  })
-
   async getOrCreate(uid) {
-    const address = this.provider.getAddress(uid)
+    const address = providerUser.getAddress(uid)
     let balance = await this.bicBalance.findOne({where: {uid: uid}});
     if(!balance) {
       balance = await this.bicBalance.create({
